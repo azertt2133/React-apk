@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import TaskForm from "../components/TaskForm";
-import EmptyState from "./EmptyState";
 import { loadTasks, saveTasks, loadFolders, saveFolders } from "../utils/storage";
 
-// ── Formatage du temps ──────────────────────────────────────────────────────
 function formatTime(seconds) {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
@@ -13,7 +11,6 @@ function formatTime(seconds) {
   return `${s}s`;
 }
 
-// ── TaskItem inline ─────────────────────────────────────────────────────────
 function TaskItem({ task, onToggle, onDelete, onStart, onPause }) {
   const [display, setDisplay] = useState(task.elapsed || 0);
   const ref = useRef(null);
@@ -31,8 +28,9 @@ function TaskItem({ task, onToggle, onDelete, onStart, onPause }) {
   }, [task.running, task.done, task.elapsed, task.startedAt]);
 
   return (
-    <div className={`task-item task-item-enhanced ${task.done ? "done" : ""}`} style={{ opacity:1, transform:"none" }}>
-      {/* ligne principale */}
+    <div className={`task-item task-item-enhanced ${task.done ? "done" : ""}`}
+      style={{ opacity: 1, transform: "none" }}>
+
       <div className="task-main-row">
         <button
           className={`task-check ${task.done ? "task-check-done" : ""}`}
@@ -50,7 +48,6 @@ function TaskItem({ task, onToggle, onDelete, onStart, onPause }) {
         <button className="task-delete-btn" onClick={() => onDelete(task.id)}>🗑</button>
       </div>
 
-      {/* chrono */}
       {(display > 0 || task.running) && (
         <div className="task-time-row">
           <span className={`task-time-badge ${task.running ? "task-time-running" : task.done ? "task-time-done" : ""}`}>
@@ -62,20 +59,19 @@ function TaskItem({ task, onToggle, onDelete, onStart, onPause }) {
   );
 }
 
-// ── Page principale ─────────────────────────────────────────────────────────
 const ICONS = ["📁","🏋️","💼","🎯","📚","🎨","🚀","🏠","🎮","💡","🧘","✈️"];
 
 export default function Tasks() {
-  const [tasks,          setTasks]          = useState(null);
-  const [folders,        setFolders]        = useState(null);
-  const [activeFolder,   setActiveFolder]   = useState(null);
-  const [filter,         setFilter]         = useState("all");
-  const [showNewFolder,  setShowNewFolder]  = useState(false);
-  const [newName,        setNewName]        = useState("");
-  const [newIcon,        setNewIcon]        = useState("📁");
-  const [newColor,       setNewColor]       = useState("#b300ff");
+  const [tasks,         setTasks]         = useState(null);
+  const [folders,       setFolders]       = useState(null);
+  const [activeFolder,  setActiveFolder]  = useState(null);
+  const [filter,        setFilter]        = useState("all");
+  const [showNewFolder, setShowNewFolder] = useState(false);
+  const [newName,       setNewName]       = useState("");
+  const [newIcon,       setNewIcon]       = useState("📁");
+  const [newColor,      setNewColor]      = useState("#b300ff");
 
-  // chargement initial — même pattern que PageContact
+  // ── chargement initial ── même pattern exact que PageContact
   useEffect(() => {
     const savedFolders = loadFolders();
     setFolders(savedFolders);
@@ -83,34 +79,30 @@ export default function Tasks() {
     setTasks(loadTasks());
   }, []);
 
-  // sauvegarde automatique (skip si pas encore chargé)
-  useEffect(() => { if (tasks   !== null) saveTasks(tasks);     }, [tasks]);
+  // ── sauvegarde automatique (skip avant chargement) ──
+  useEffect(() => { if (tasks   !== null) saveTasks(tasks);   }, [tasks]);
   useEffect(() => { if (folders !== null) saveFolders(folders); }, [folders]);
 
-  // attendre le chargement — même pattern que PageContact
+  // ── attendre le chargement ── même pattern exact que PageContact
   if (tasks === null || folders === null) return null;
 
-  // ── Actions tâches ────────────────────────────────────────────────────────
-  const addTask = (text) => {
-    setTasks(prev => [...prev, {
-      id: Date.now(), text, done: false, folderId: activeFolder,
-      createdAt: Date.now(), startedAt: null, completedAt: null,
-      elapsed: 0, running: false,
-    }]);
-  };
+  // ── actions tâches ──
+  const addTask = (text) => setTasks(prev => [...prev, {
+    id: Date.now(), text, done: false, folderId: activeFolder,
+    createdAt: Date.now(), startedAt: null, completedAt: null,
+    elapsed: 0, running: false,
+  }]);
 
-  const toggleTask = (id) => {
-    setTasks(prev => prev.map(t => {
-      if (t.id !== id) return t;
-      if (!t.done) {
-        const elapsed = t.running
-          ? t.elapsed + Math.floor((Date.now() - t.startedAt) / 1000)
-          : t.elapsed;
-        return { ...t, done: true, completedAt: Date.now(), running: false, elapsed };
-      }
-      return { ...t, done: false, completedAt: null };
-    }));
-  };
+  const toggleTask = (id) => setTasks(prev => prev.map(t => {
+    if (t.id !== id) return t;
+    if (!t.done) {
+      const elapsed = t.running
+        ? t.elapsed + Math.floor((Date.now() - t.startedAt) / 1000)
+        : t.elapsed;
+      return { ...t, done: true, completedAt: Date.now(), running: false, elapsed };
+    }
+    return { ...t, done: false, completedAt: null };
+  }));
 
   const deleteTask = (id) => setTasks(prev => prev.filter(t => t.id !== id));
 
@@ -123,7 +115,7 @@ export default function Tasks() {
     return { ...t, running: false, elapsed: t.elapsed + Math.floor((Date.now() - t.startedAt) / 1000) };
   }));
 
-  // ── Actions dossiers ──────────────────────────────────────────────────────
+  // ── actions dossiers ──
   const createFolder = () => {
     if (!newName.trim()) return;
     const f = { id: Date.now().toString(), name: newName.trim(), icon: newIcon, color: newColor };
@@ -139,28 +131,29 @@ export default function Tasks() {
     setActiveFolder(remaining[0]?.id || null);
   };
 
-  // ── Calculs affichage ─────────────────────────────────────────────────────
-  const folderTasks    = tasks.filter(t => t.folderId === activeFolder);
-  const filteredTasks  = folderTasks.filter(t => {
-    if (filter === "done")   return t.done;
-    if (filter === "active") return !t.done;
-    return true;
-  });
-  const doneCount      = folderTasks.filter(t => t.done).length;
-  const totalCount     = folderTasks.length;
-  const progressPct    = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
-  const activeF        = folders.find(f => f.id === activeFolder);
+  // ── calculs ──
+  const folderTasks   = tasks.filter(t => t.folderId === activeFolder);
+  const filteredTasks = folderTasks.filter(t =>
+    filter === "done" ? t.done : filter === "active" ? !t.done : true
+  );
+  const doneCount   = folderTasks.filter(t => t.done).length;
+  const totalCount  = folderTasks.length;
+  const progressPct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+  const activeF     = folders.find(f => f.id === activeFolder);
 
-  // ── Rendu ─────────────────────────────────────────────────────────────────
   return (
     <div className="page">
-      <h1 className="page-title-gradient">Mes Tâches</h1>
+      <h1 style={{
+        fontSize: "32px", marginBottom: "30px",
+        background: "linear-gradient(135deg, var(--primary-neon), var(--secondary-neon))",
+        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+        backgroundClip: "text", textTransform: "uppercase", letterSpacing: "2px"
+      }}>Mes Tâches</h1>
 
-      {/* Onglets dossiers */}
+      {/* ── Onglets dossiers ── */}
       <div className="folders-bar">
         {folders.map(f => (
-          <div
-            key={f.id}
+          <div key={f.id}
             className={`folder-tab ${activeFolder === f.id ? "folder-tab-active" : ""}`}
             style={{ "--folder-color": f.color }}
             onClick={() => setActiveFolder(f.id)}
@@ -180,22 +173,21 @@ export default function Tasks() {
         </button>
       </div>
 
-      {/* Formulaire nouveau dossier */}
+      {/* ── Formulaire nouveau dossier ── */}
       {showNewFolder && (
         <div className="new-folder-form">
           <div className="icon-picker">
             {ICONS.map(ic => (
-              <button key={ic} className={`icon-btn ${newIcon === ic ? "icon-btn-active" : ""}`}
+              <button key={ic}
+                className={`icon-btn ${newIcon === ic ? "icon-btn-active" : ""}`}
                 onClick={() => setNewIcon(ic)}>{ic}</button>
             ))}
           </div>
           <div className="folder-form-row">
-            <input
-              className="folder-name-input"
-              type="text" placeholder="Nom du dossier..."
+            <input className="folder-name-input" type="text"
+              placeholder="Nom du dossier..."
               value={newName} onChange={e => setNewName(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && createFolder()}
-            />
+              onKeyDown={e => e.key === "Enter" && createFolder()} />
             <input className="folder-color-input" type="color"
               value={newColor} onChange={e => setNewColor(e.target.value)} />
             <button className="folder-create-btn" onClick={createFolder}>Créer</button>
@@ -204,12 +196,15 @@ export default function Tasks() {
         </div>
       )}
 
-      {/* Barre de progression */}
+      {/* ── Barre de progression ── */}
       {totalCount > 0 && (
         <div className="progress-section">
           <div className="progress-header">
-            <span className="progress-label">{activeF?.icon} {activeF?.name} — {doneCount}/{totalCount} tâches</span>
-            <span className="progress-percent" style={{ color: activeF?.color || "var(--primary-neon)" }}>
+            <span className="progress-label">
+              {activeF?.icon} {activeF?.name} — {doneCount}/{totalCount} tâches
+            </span>
+            <span className="progress-percent"
+              style={{ color: activeF?.color || "var(--primary-neon)" }}>
               {progressPct}%
             </span>
           </div>
@@ -222,13 +217,15 @@ export default function Tasks() {
         </div>
       )}
 
-      {/* Formulaire ajout tâche */}
+      {/* ── Formulaire ajout tâche ── */}
       <TaskForm onAdd={addTask} />
 
-      {/* Filtres */}
+      {/* ── Filtres ── */}
       <div className="filters">
         {["all","active","done"].map(f => (
-          <button key={f} className={`filter-btn ${filter === f ? "active" : ""}`} onClick={() => setFilter(f)}>
+          <button key={f}
+            className={`filter-btn ${filter === f ? "active" : ""}`}
+            onClick={() => setFilter(f)}>
             {f === "all" ? "Toutes" : f === "active" ? "En cours" : "Terminées"}
           </button>
         ))}
@@ -236,7 +233,7 @@ export default function Tasks() {
 
       <p className="counter">{filteredTasks.length} tâche(s) / {totalCount} dans ce dossier</p>
 
-      {/* Liste */}
+      {/* ── Liste ── */}
       {filteredTasks.length === 0
         ? <p className="empty">Aucune tâche ici.</p>
         : <div className="task-list">
