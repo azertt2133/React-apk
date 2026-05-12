@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Layout from "./layout/Layout";
+import Layout from "./Layout/Layout";
 import Home from "./pages/Home";
 import Tasks from "./pages/Tasks";
 import About from "./pages/About";
