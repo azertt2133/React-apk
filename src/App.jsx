@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Layout from "./Layout/Layout";
+import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Tasks from "./pages/Tasks";
 import About from "./pages/About";
@@ -11,11 +11,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simuler le chargement initial
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2500);
-
+    const timer = setTimeout(() => setIsLoading(false), 2500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -23,14 +19,20 @@ function App() {
     <>
       {isLoading && <Loader />}
       <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/tasks" element={<Tasks />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<PageContact />} />
-          </Routes>
-        </Layout>
+        <div className="app-container">
+          <Navbar />
+          <main className="content">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/tasks" element={<Tasks />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<PageContact />} />
+            </Routes>
+          </main>
+          <footer className="footer">
+            <p>© 2026 LXCO — Développé avec React & Neon Style</p>
+          </footer>
+        </div>
       </BrowserRouter>
     </>
   );
